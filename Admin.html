@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="sstyle.css" />
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>BAIUST Events</h1>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="events.html">Events</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="dashboard-container">
+      <section class="stats-section">
+        <div class="card">
+          <h2>Total Students Registered</h2>
+          <p id="totalCount">Loading...</p>
+        </div>
+        <div class="card">
+          <h2>Upcoming Events</h2>
+          <button onclick="location.href='admin-event.html'">View Events</button>
+        </div>
+      </section>
+
+      <section class="table-section">
+        <h2>📋 Student-Wise Event Registrations</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Student Name</th>
+              <th>Student ID</th>
+              <th>Event Title</th>
+              <th>Event Date</th>
+              <th>Registered Date</th>
+            </tr>
+          </thead>
+          <tbody id="registrationTable">
+            <!-- Registration rows will be inserted here -->
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // Load registration data and populate table
+    function loadRegistrations() {
+      fetch('http://localhost:5000/admin/events-registrations')
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.getElementById('registrationTable');
+          tbody.innerHTML = '';
+
+          if (!Array.isArray(data) || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6">No registrations found.</td></tr>';
+            return;
+          }
+
+          data.forEach((reg, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${index + 1}</td>
+              <td>${reg.Name}</td>
+              <td>${reg.StudentID}</td>
+              <td>${reg.EventName}</td>
+              <td>${reg.EventDate ? new Date(reg.EventDate).toLocaleDateString() : ''}</td>
+              <td>${reg.RegDate ? new Date(reg.RegDate).toLocaleDateString() : ''}</td>
+            `;
+            tbody.appendChild(row);
+          });
+        })
+        .catch(err => {
+          console.error('Error loading registrations:', err);
+          document.getElementById('registrationTable').innerHTML = `<tr><td colspan="6">Error loading registrations.</td></tr>`;
+        });
+    }
+
+    // Load total students count
+    function loadTotalStudents() {
+      fetch('http://localhost:5000/admin/total-students')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('totalCount').textContent = data.count || 0;
+        })
+        .catch(err => {
+          console.error('Error loading total students count:', err);
+          document.getElementById('totalCount').textContent = 'Error loading count';
+        });
+    }
+
+    window.onload = () => {
+      loadRegistrations();
+      loadTotalStudents();
+    };
+  </script>
+</body>
+</html>
